@@ -6,7 +6,7 @@ const compareEngine = require('../engine/compare')
 
 const compare = async (req, res, next) => {
     const { season, style } = req.params
-    const bomData = await bom.getBySeason(season, style)
+    const bomData = await bom.getBySeason(season, style, req.body.file)
     const inetData = await inet.getItemsBySeasonAndStyle(season, style, req.body?.sample)
     const sapData = await sap.getItemsBySeasonAndStyle(season, style)
     const bomToInet = compareEngine.compareBomWithInet(bomData, inetData)

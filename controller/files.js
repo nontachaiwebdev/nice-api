@@ -73,12 +73,31 @@ const downloadFile = async (req, res, next) => {
     await cli.close()
     // res.send({ list })
     res.attachment(fileName)
-    console.log(buffer)
     const readStream = Readable.from(Buffer.concat(buffer))
     readStream.on('end', () => res.end())
     // fs.createReadStream(file).pipe(res)
     readStream.pipe(res)
     // res.end()
+}
+
+const getFileBuffer = (fileName) => {
+    return new Promise(async (resolve, reject) => {
+        let buffer = []
+        // const fileName = req.query.path.split('/')[1]
+        const writableStream = new Writable()
+        writableStream._write = (chunk, encoding, next) => {
+            buffer.push(chunk)
+            next()
+        }
+        const cli = await getConnection()
+        await cli.downloadTo(writableStream, fileName)
+        await cli.close()
+        // res.attachment(fileName)
+        // const readStream = Readable.from(Buffer.concat(buffer))
+        resolve(Buffer.concat(buffer))
+    })
+    // fs.createReadStream(file).pipe(res)
+    // readStream.pipe(res)
 }
 
 const removeFile = async (req, res, next) => {
@@ -98,5 +117,6 @@ module.exports = {
     getList,
     downloadFile,
     removeFile,
-    getUserFiles
+    getUserFiles,
+    getFileBuffer
 }

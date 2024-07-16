@@ -3,7 +3,7 @@ const mysql = require('mysql2/promise')
 const HOST = '192.168.19.20'
 const USER = 'TouchUp'
 const PASSWORD = 'fN3mzP67'
-const DATABASE = 'nicetraining'
+const DATABASE = 'niceapparel'
 const getConnection = () => {
     return new Promise(async (resolve, reject) => {
         const connection = await mysql.createConnection({
