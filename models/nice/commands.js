@@ -1,6 +1,6 @@
 const CREATE_USER = (user, encodedPassword) => `INSERT INTO nice.users
 (firstname, lastname, email, password, group_one, group_two, created_at)
-VALUES("${user.firstname}", "${user.lastname}", "${user.email}", "${encodedPassword}", NOW());`
+VALUES("${user.firstname}", "${user.lastname}", "${user.email}", "${encodedPassword}", 1, 0, NOW());`
 
 const GET_USER_BY_EMAIL = `SELECT id, firstname, lastname, password, email, group_one, group_two, created_at
 FROM nice.users WHERE email = ":email"`
