@@ -6,6 +6,7 @@ const createUser = (user, encodedPassword) => {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection()
         try {
+            console.log(commands.CREATE_USER(user, encodedPassword))
             const [results] = await connection.query(commands.CREATE_USER(user, encodedPassword))
             resolve(results)
         } catch (err) {
