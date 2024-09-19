@@ -28,6 +28,31 @@ const getBySeason = (season, style, file) => {
     })
 }
 
+const getCategories = (file) => {
+    return new Promise(async (resolve) => {
+        const data = await getData(file)
+        // const styles = new Set()
+        // data.forEach((item) => styles.add(item['STYLE_NBR']))
+        const seasonsAndStyles = data.reduce((result, item) => {
+            const { SEASON_CD, SEASON_YR } = item
+            const season = `${SEASON_CD}${SEASON_YR.slice(-2)}`
+
+            return {
+                ...result,
+                [season]: result[season] ? (result[season].includes(item['STYLE_NBR']) ? [...result[season]] : [...result[season], item['STYLE_NBR']]) : [item['STYLE_NBR']]
+            }
+        }, {})
+        // const activeRows = utils.getValidItemByStatus(data)
+        // console.log('activeRows', activeRows.length)
+        // const targetItems = utils.filterBySeasonAndStyle(activeRows, season, style)
+        // console.log('targetItems', targetItems.length)
+        // const rows = utils.groupDataRow(targetItems)
+        // const withSuppliers = await utils.poppulateVendors(rows)
+        resolve(seasonsAndStyles)
+    })
+}
+
 module.exports = {
-    getBySeason
+    getBySeason,
+    getCategories
 }

@@ -14,7 +14,7 @@ const multer = require('multer')
 const upload = multer()
 
 const corsOptions = {
-    origin: 'http://192.168.19.91:3000', // 'http://localhost:3000',
+    origin: 'http://192.168.19.91:3000',
     credentials: true,
 };
 app.use(cors(corsOptions))
@@ -38,6 +38,7 @@ app.use('/download', express.static('source'))
 app.post('/compare/:season/:style', compareEngine.compare)
 app.get('/compare/sources', source.getSources)
 app.get('/compare/ms', compareEngine.compareSap)
+app.get('/compare/style/:name', compareEngine.getCategoryByFileName)
 app.post('/user', users.createUser)
 
 app.post('/auth', users.authen)

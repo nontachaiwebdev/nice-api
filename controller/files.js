@@ -3,6 +3,7 @@ const fs = require('fs')
 const { Readable, Writable } = require('stream')
 const { Buffer } = require('buffer');
 const nice = require('../models/nice')
+const moment = require('moment')
 
 const FTP_HOST = '192.168.19.62'
 const FTP_USERNAME = 'mavenfield01'
@@ -36,10 +37,10 @@ const upload = async (req, res, next) => {
     const formData = req.body;
     const stream = Readable.from(req.file.buffer)
     const cli = await getConnection()
-    // console.log('---', await cli.list('/group_two'))
-    await cli.uploadFrom(stream, `${req.params.group_id}/${formData.name}`)
+    let fileName = `${moment().format('YY-MM-DDHHmmss')}.xlsb`
+    await cli.uploadFrom(stream, `${req.params.group_id}/${fileName}`)
     await cli.close()
-    await nice.insertFile(req.params.group_id, formData.name, req.params.user_id)
+    await nice.insertFile(req.params.group_id, fileName, req.params.user_id)
     res.end()
 }
 

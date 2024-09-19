@@ -17,13 +17,32 @@ const compare = async (req, res, next) => {
     })
 }
 
+// const murCompare = async (req, res, next) => {
+//     const { season, style } = req.params
+//     const murData = await bom.getBySeason('FW24', 'MTS21BM100B', req.body.file)
+//     // const inetData = await inet.getItemsBySeasonAndStyle(season, style, req.body?.sample)
+//     // const sapData = await sap.getItemsBySeasonAndStyle(season, style)
+//     // const bomToInet = compareEngine.compareBomWithInet(bomData, inetData)
+//     // const bomToSap = compareEngine.compareBomWithSap(bomData, sapData)
+//     res.send({
+//         // bomToInet,
+//         // bomToSap
+//     })
+// }
+
 const compareSap = async (req, res, next) => {
     await sap.getAllItems()
+}
+
+const getCategoryByFileName = async (req, res, next) => {
+    const categories = await bom.getCategories(req.params.name)
+    res.send(categories)
 }
 
 
 
 module.exports = {
     compare,
-    compareSap
+    compareSap,
+    getCategoryByFileName
 }

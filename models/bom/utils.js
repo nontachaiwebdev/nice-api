@@ -79,6 +79,7 @@ const toMainFormat = (d) => {
         // part: d.PartName,
         cons: d[fields.QTY],
         // msc_code: d[fields.MSC_CODE],
+        category: d[fields.CATEGORY],
         source: d
     }
 }

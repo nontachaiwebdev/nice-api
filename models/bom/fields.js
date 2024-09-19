@@ -11,6 +11,7 @@ const STATUS = 'STATUS'
 const VENDOR_CODE = 'VEND_CD'
 const QTY = 'QTY'
 const MSC_CODE = 'MSC_CODE'
+const CATEGORY = 'ITEM_TYPE_1'
 
 module.exports = {
     SEASON_CODE,
@@ -25,5 +26,6 @@ module.exports = {
     STATUS,
     VENDOR_CODE,
     QTY,
-    MSC_CODE
+    MSC_CODE,
+    CATEGORY
 }
