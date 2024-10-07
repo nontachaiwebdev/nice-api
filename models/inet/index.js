@@ -1,10 +1,10 @@
 const query = require('./query')
 const utils = require('./utils')
 
-const getItemsBySeasonAndStyle = (season, style, sample) => {
+const getItemsBySeasonAndStyle = (season, style, sample, category) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const data = await query.getItemsBySeasonAndStyle(season, style, sample)
+            const data = await query.getItemsBySeasonAndStyle(season, style, sample, category)
             resolve(utils.transformToMainFormat(data))
         } catch (err) {
             reject(err)

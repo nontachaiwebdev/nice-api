@@ -4,6 +4,25 @@ const config = require('./config')
 const inet = require('../inet/query')
 const files = require('../../controller/files')
 
+const categoryMapping = {
+    '01': {
+        name: 'Fabric',
+        match: ['fabric']
+    },
+    '02': {
+        name: 'Accessories',
+        match: ['trim', 'thread', 'zippers', 'embroidery', 'direct application']
+    },
+    '03': {
+        name: 'Packing',
+        match: ['packaging']
+    },
+    '04': {
+        name: 'Other',
+        match: ['statement', 'content information', 'care instructions', 'size matrix']
+    }
+}
+
 const getData = (file) => {
     return new Promise(async (resolve, reject) => {
         // const workbook = XLSX.readFile(config.SOURCE_FILE)
@@ -15,15 +34,25 @@ const getData = (file) => {
     })
 }
 
-const getBySeason = (season, style, file) => {
+const filterByCategory = (data, category) => {
+    const compare = categoryMapping[category].match
+    console.log(compare)
+    return data.filter((item) => {
+        return compare.includes(item['ITEM_TYPE_1'].toLowerCase())
+    })
+}
+
+const getBySeason = (season, style, file, category) => {
     return new Promise(async (resolve) => {
         const data = await getData(file)
         const activeRows = utils.getValidItemByStatus(data)
-        console.log('activeRows', activeRows.length)
         const targetItems = utils.filterBySeasonAndStyle(activeRows, season, style)
-        console.log('targetItems', targetItems.length)
         const rows = utils.groupDataRow(targetItems)
-        const withSuppliers = await utils.poppulateVendors(rows)
+        let withSuppliers = await utils.poppulateVendors(rows)
+        console.log(withSuppliers.length, category)
+        if(category)
+            withSuppliers = filterByCategory(withSuppliers, category)
+        console.log(withSuppliers.length)
         resolve(utils.transformToMainFormat(withSuppliers))
     })
 }
@@ -31,8 +60,6 @@ const getBySeason = (season, style, file) => {
 const getCategories = (file) => {
     return new Promise(async (resolve) => {
         const data = await getData(file)
-        // const styles = new Set()
-        // data.forEach((item) => styles.add(item['STYLE_NBR']))
         const seasonsAndStyles = data.reduce((result, item) => {
             const { SEASON_CD, SEASON_YR } = item
             const season = `${SEASON_CD}${SEASON_YR.slice(-2)}`
@@ -42,12 +69,6 @@ const getCategories = (file) => {
                 [season]: result[season] ? (result[season].includes(item['STYLE_NBR']) ? [...result[season]] : [...result[season], item['STYLE_NBR']]) : [item['STYLE_NBR']]
             }
         }, {})
-        // const activeRows = utils.getValidItemByStatus(data)
-        // console.log('activeRows', activeRows.length)
-        // const targetItems = utils.filterBySeasonAndStyle(activeRows, season, style)
-        // console.log('targetItems', targetItems.length)
-        // const rows = utils.groupDataRow(targetItems)
-        // const withSuppliers = await utils.poppulateVendors(rows)
         resolve(seasonsAndStyles)
     })
 }

@@ -12,7 +12,10 @@ const ITEM_BY_SEASON_AND_STYLE = `
     ,sm.SmpType, sm.Style,
     sm.GmtType, sm.SysLMUser, sm.SysLMDate, sm.SysOwner, sm.\`Status\`, sm.ExtDesc1 Category,
     sb.PartName, sb.MatrCode, sb.MatrColor, sb.Unit, sb.MatrSize, sw.GmtColor, sw.Color Color_Code,
-    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category
+    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category,
+    IF(syg.Category='01', 'Fabric',
+    IF(syg.Category='02', 'Accessories',
+    IF(syg.Category='03', "Packing", 'Other'))) SportCategory
     FROM smomstr sm
     Left JOIN smobom sb ON sm.SmOrderNo = sb.SmOrderNo 
     Left JOIN smycway sw ON sb.SmOrderNo = sw.SmOrderNo AND sb.MatrColor = sw.ColorGrp 
@@ -25,13 +28,17 @@ const ITEM_BY_SEASON_AND_STYLE = `
     sm.\`Status\` <> 'X' 
     AND sw.color <> '*'
     AND sw.GmtColor is not null
-    AND sm.SmpType = '13'
+    AND sm.SmpType = ':sample_type'
+    :category_condition
     UNION 
     SELECT sm.SmOrderNo, sm.season, sm.Customer
     ,sm.SmpType, sm.Style,
     sm.GmtType, sm.SysLMUser, sm.SysLMDate, sm.SysOwner, sm.\`Status\`, sm.ExtDesc1 Category,
     sb.PartName, sb.MatrCode, '' MatrColor, sb.Unit, sb.MatrSize, sy.color GmtColor, sb.matrcolor Color_Code,
-    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category
+    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category,
+    IF(syg.Category='01', 'Fabric',
+    IF(syg.Category='02', 'Accessories',
+    IF(syg.Category='03', "Packing", 'Other'))) SportCategory
     FROM smomstr sm
     Left JOIN smobom sb ON sm.SmOrderNo = sb.SmOrderNo 
     LEFT JOIN smycolor sy ON sb.smorderno = sy.smorderno
@@ -42,9 +49,61 @@ const ITEM_BY_SEASON_AND_STYLE = `
     sm.Style = ':style' AND
     sm.season = ':season' AND
     sm.\`Status\` <> 'X'
-    AND sm.SmpType = '13' 
+    AND sm.SmpType = ':sample_type' 
     AND (LENGTH(sb.matrcolor) > 2 or sb.matrcolor is null or sb.matrcolor ='')
+    :category_condition
 `
+// const COMMAND = `
+//     SELECT sm.SmOrderNo, sm.season, sm.Customer
+//     ,sm.SmpType, sm.Style,
+//     sm.GmtType, sm.SysLMUser, sm.SysLMDate, sm.SysOwner, sm.`Status`, sm.ExtDesc1 Category,
+//     sb.PartName, sb.MatrCode, sb.MatrColor, sb.Unit, sb.MatrSize, sw.GmtColor, sw.Color Color_Code,
+//     sc.Description Color_Name, su.`Code` Supplier_Code, su.`Name` Supplier_Name,CardNo,
+//     IF(syg.Category='01', 'Fabric',
+//     IF(syg.Category='02', 'Accessories',
+//     IF(syg.Category='03', "Packing", 'Other'))) SportCategory
+//     FROM smomstr sm
+//     Left JOIN smobom sb ON sm.SmOrderNo = sb.SmOrderNo 
+//     Left JOIN smycway sw ON sb.SmOrderNo = sw.SmOrderNo AND sb.MatrColor = sw.ColorGrp 
+//     Left JOIN sycsupp su ON sb.Supplier = su.`Code` 
+//     Left JOIN sygmcls syg ON sb.MatrClass = syg.`Code` 
+//     Left JOIN (select Cardno,Color,Description from sygcolor where cardno='') sc ON sw.Color  = sc.Color
+//     WHERE
+//     sm.Style = 'FZ0732' AND
+//     sm.season = 'HO24' AND
+//     sm.`Status` <> 'X' 
+//     AND sb.MatrCode='412496'
+//     -- AND sm.SmOrderNo='SMNK21ADP0473'
+//     AND sw.color <> '*'
+//     AND sw.GmtColor is not null
+//     AND sm.SmpType='13'
+//     -- AND sc.CardNo=''
+//     UNION 
+//     SELECT sm.SmOrderNo, sm.season, sm.Customer
+//     ,sm.SmpType, sm.Style,
+//     sm.GmtType, sm.SysLMUser, sm.SysLMDate, sm.SysOwner, sm.`Status`, sm.ExtDesc1 Category,
+//     sb.PartName, sb.MatrCode, '' MatrColor, sb.Unit, sb.MatrSize, sy.color GmtColor, sb.matrcolor Color_Code,
+//     sc.Description Color_Name, su.`Code` Supplier_Code, su.`Name` Supplier_Name,CardNo,
+//     IF(syg.Category='01', 'Fabric',
+//     IF(syg.Category='02', 'Accessories',
+//     IF(syg.Category='03', "Packing", 'Other'))) SportCategory
+//     FROM smomstr sm
+//     Left JOIN smobom sb ON sm.SmOrderNo = sb.SmOrderNo 
+//     LEFT JOIN smycolor sy ON sb.smorderno = sy.smorderno
+//     -- Left JOIN smycway sw ON sb.SmOrderNo = sw.SmOrderNo AND sb.MatrColor = sw.ColorGrp 
+//     Left JOIN sycsupp su ON sb.Supplier = su.`Code` 
+//     Left JOIN sygmcls syg ON sb.MatrClass = syg.`Code` 
+//     Left JOIN (select Cardno,Color,Description from sygcolor where Cardno='') sc ON sy.Color  = sc.Color
+//     WHERE
+//     sm.Style = 'FZ0732' AND
+//     sm.season = 'HO24' AND
+//     sm.`Status` <> 'X'
+//     AND sm.SmpType='13' 
+//     -- AND sc.CardNo=''
+//     AND sb.MatrCode='412496'
+//     -- AND sm.SmOrderNo='SMNK21ADP0473'
+//     AND (LENGTH(sb.matrcolor) > 2 or sb.matrcolor is null or sb.matrcolor ='')
+// `
 
 // smomstr.SmpType
 
