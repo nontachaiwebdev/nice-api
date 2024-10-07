@@ -57,9 +57,20 @@ const filterByStyle = (data, season, style) => {
     return data.filter((item) => item[WORKING_SEASON] == season && item[WORKING_NUMBER] == style)
 }
 
+const getMappingSeason = (item) => {
+    const code = item[WORKING_SEASON].slice(0, 2);
+    if(code.toLowerCase() === 'ss') {
+        return item[WORKING_SEASON].replace('SS', 'SP')
+    } else if(code.toLowerCase() === 'fw') {
+        return item[WORKING_SEASON].replace('FW', 'FA')
+    }
+
+    return item[WORKING_SEASON]
+}
+
 const convertToUniversalFormat = (item) => {
     return {
-        season: item[WORKING_SEASON],
+        season: getMappingSeason(item),
         style: item[WORKING_NUMBER],
         combi: item[ARTICLE],
         materia_code: item[BOM_PART_GROUP_NUMBER],
