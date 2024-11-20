@@ -8,7 +8,6 @@ const murIndex = require('../models/mur')
 
 const compare = async (req, res, next) => {
     const { season, style } = req.params
-    console.log(req.body.category)
     const bomData = await bom.getBySeason(season, style, req.body.file, req.body?.category)
     const inetData = await inet.getItemsBySeasonAndStyle(season, style, req.body?.sample, req.body?.category)
     const sapData = await sap.getItemsBySeasonAndStyle(season, style, req.body?.category)

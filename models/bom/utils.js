@@ -10,12 +10,47 @@ const getStyle = (d) => d[fields.STYLE_NUMBER]
 const isSameSeasonAndYear = (data, season, style) => getSeasonCode(data) === season && getStyle(data) === style
 const filterBySeasonAndStyle = (data, season, style) => data.filter((d) => isSameSeasonAndYear(d, season, style))
 
+const isGcwColor = (d) => !!d[fields.GCW_COLOR] 
 const groupByStyleAndMaterial = (result, d) => {
     const code = `${d[fields.STYLE_CODE]}#${d[fields.MATERIAL_NUMBER]}`
-    return {
+    const grouped = {
         ...result,
         [code]: result[code] ? [...result[code], d] : [d]
     }
+    // return grouped;
+    return Object.keys(grouped).reduce((result, key) => {
+        const items = grouped[key]
+        if (items.length > 1) {
+            if(isGcwColor(items[0]))  {
+                return {
+                    ...result,
+                    [key]: grouped[key].reduce((result, item) => {
+                        const duplicated = result.find((r) => r['GCW_ORD'] === item['GCW_ORD'])
+                        if(duplicated)
+                            return result
+
+                        return [...result, item]
+                    }, [])
+                }
+            } else {
+                return {
+                    ...result,
+                    [key]: grouped[key].reduce((result, item) => {
+                        const duplicated = result.find((r) => r['ITEM_COLOR_ORD'] === item['ITEM_COLOR_ORD'])
+                        if(duplicated)
+                            return result
+
+                        return [...result, item]
+                    }, [])
+                }
+            }
+        } else {
+            return {
+                ...result,
+                [key]: grouped[key]
+            }
+        }
+    }, {})
 }
 
 // ASC Sort function
@@ -24,7 +59,7 @@ const ordSort = (key) => (x, y) => {
     if (x[key] > x[key]) return 1;
     return 0;
 }
-const isGcwColor = (d) => !!d[fields.GCW_COLOR] 
+
 const getGcwCode = (components) => {
     components.sort(ordSort(fields.GCW_ORD))
     const gcwNumber = components[0][fields.GCW_COLOR]
