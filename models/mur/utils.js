@@ -73,7 +73,7 @@ const convertToUniversalFormat = (item) => {
         season: getMappingSeason(item),
         style: item[WORKING_NUMBER],
         combi: item[ARTICLE],
-        materia_code: item[BOM_PART_GROUP_NUMBER],
+        materia_code: item[MATERIAL_CODE],
         color_code: item['color_code'],
         vendor: item['vendor'],
         cons: item[YIELD],
