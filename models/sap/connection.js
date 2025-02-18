@@ -4,7 +4,7 @@ const PASSWORD = 'fN3mzP67'
 const config = {
     user: USER,
     password: PASSWORD,
-    // database: process.env.DB_NAME,
+    database: 'Sapdatatank', // process.env.DB_NAME,
     server: HOST,
     pool: {
       max: 10,
