@@ -73,7 +73,7 @@ const compareBomWithSap = (bomData, sapData) => {
             ...result,
             add: [...result.add, resultData]
         }
-    }, { add: [], update: [] })
+    }, { add: [], update: [], found: [] })
     const updateKeys = bomResult.update.map((dt) => dt.key)
     const sapResult = sapData.reduce((result, dt) => {
         const compareKey = getKey(dt)
@@ -89,7 +89,7 @@ const compareBomWithSap = (bomData, sapData) => {
             ...result,
             delete: [...result.delete, resultData]
         }
-    }, { delete: [], update: [] })
+    }, { delete: [], update: [], found: [] })
     return {
         bomResult,
         sapResult
