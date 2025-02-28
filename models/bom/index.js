@@ -3,6 +3,7 @@ const utils = require('./utils')
 const config = require('./config')
 const inet = require('../inet/query')
 const files = require('../../controller/files')
+const nice = require('../nice')
 
 const categoryMapping = {
     '01': {
@@ -44,15 +45,15 @@ const filterByCategory = (data, category) => {
 
 const getBySeason = (season, style, file, category) => {
     return new Promise(async (resolve) => {
-        const data = await getData(file)
+        // const data = await getData(file)
+        const data = await nice.getBomDataBySeasonStyleAndFile(season, style, file)
+        // console.log(data)
         const activeRows = utils.getValidItemByStatus(data)
         const targetItems = utils.filterBySeasonAndStyle(activeRows, season, style)
         const rows = utils.groupDataRow(targetItems)
         let withSuppliers = await utils.poppulateVendors(rows)
-        console.log(withSuppliers.length, category)
         if(category)
             withSuppliers = filterByCategory(withSuppliers, category)
-        console.log(withSuppliers.length)
         resolve(utils.transformToMainFormat(withSuppliers))
     })
 }

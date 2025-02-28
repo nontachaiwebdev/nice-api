@@ -11,12 +11,10 @@ const createUser = async (req, res, next) => {
 
 const authen = async (req, res, next) => {
     const [user] = await nice.getUserByEmail(req.body.email)
-    console.log(user)
     if(!user || !bcrypt.compareSync(req.body.password, user.password)) {
         res.sendStatus(404)
     }
 
-    console.log(user)
     const token = jwt.sign(user, SECRET)
     res.send({ token })
 } 

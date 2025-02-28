@@ -18,6 +18,13 @@ const getItemsBySeasonAndStyle = (season, style, sample, category) => {
     return new Promise(async (resolve, reject) => {
         const connection = await getConnection()
         try {
+            console.log(
+                commands.ITEM_BY_SEASON_AND_STYLE
+                    .replaceAll(':season', season)
+                    .replaceAll(':style', style)
+                    .replaceAll(':sample_type', sample)
+                    .replaceAll(':category_condition', getCategoryCondition(category))
+            )
             const [results] = await connection.query(
                 commands.ITEM_BY_SEASON_AND_STYLE
                     .replaceAll(':season', season)

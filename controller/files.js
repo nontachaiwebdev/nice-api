@@ -4,6 +4,7 @@ const { Readable, Writable } = require('stream')
 const { Buffer } = require('buffer');
 const nice = require('../models/nice')
 const moment = require('moment')
+const XLSX = require('xlsx')
 
 const FTP_HOST = '192.168.19.62'
 const FTP_USERNAME = 'mavenfield01'
@@ -21,7 +22,7 @@ const getConnection = () => {
                 secure: false
             })
             // await client.ensureDir('group_two')
-            // console.log('---', await client.list())
+
             // await client.uploadFrom("README.md", "README_FTP.md")
             // await client.downloadTo("README_COPY.md", "README_FTP.md")
             resolve(client)
@@ -40,7 +41,19 @@ const upload = async (req, res, next) => {
     let fileName = `${moment().format('YY-MM-DDHHmmss')}.xlsb`
     await cli.uploadFrom(stream, `${req.params.group_id}/${fileName}`)
     await cli.close()
-    await nice.insertFile(req.params.group_id, fileName, req.params.user_id)
+    const fileData = await nice.insertFile(req.params.group_id, fileName, req.params.user_id)
+
+    const workbook = XLSX.read(req.file.buffer)
+    const sheet_name_list = workbook.SheetNames
+    const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]])
+
+    if(req.params.group_id === 'group_two') {
+        await nice.bulkInsertExcelData(data, fileData.insertId)
+    } else {
+        await nice.bulkInsertBomData(data, fileData.insertId)
+    }
+    // bulkInsertExcelData
+    // fileData.insertId
     res.end()
 }
 
@@ -65,7 +78,6 @@ const downloadFile = async (req, res, next) => {
     const writableStream = new Writable()
     // writableStream.on('end', () => res.end())
     writableStream._write = (chunk, encoding, next) => {
-        // console.log(chunk, buffer)
         buffer.push(chunk)
         next()
     }
