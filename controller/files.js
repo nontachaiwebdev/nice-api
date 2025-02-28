@@ -58,10 +58,11 @@ const upload = async (req, res, next) => {
 }
 
 const getList = async (req, res, next) => {
-    const cli = await getConnection()
-    const list = await cli.list(`/${req.params.group_id}`)
-    await cli.close()
-    res.send({ list })
+    const files = await nice.getFilesByGroup(req.params.group_id)
+    // const cli = await getConnection()
+    // const list = await cli.list(`/${req.params.group_id}`)
+    // await cli.close()
+    res.send({ list: files })
 }
 
 const _appendBuffer = function(buffer1, buffer2) {

@@ -729,6 +729,39 @@ const getMurDataBySeasonAndStyle = async (season, style, fileName = null) => {
     }
 };
 
+/**
+ * Get list of files filtered by group name
+ * @param {string} groupName - Group name to filter by
+ * @returns {Promise<Array>} - Array of file records
+ */
+const getFilesByGroup = async (groupName) => {
+    try {
+        const connection = await getConnection();
+        
+        const query = `
+            SELECT 
+                id,
+                file_name,
+                group_name,
+                created_by,
+                created_at
+            FROM 
+                files
+            WHERE 
+                group_name = ?
+            ORDER BY 
+                created_at DESC
+        `;
+        
+        const [rows] = await connection.query(query, [groupName]);
+        
+        return rows;
+    } catch (error) {
+        console.error('Error getting files by group:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     createUser,
     getUserByEmail,
@@ -739,5 +772,6 @@ module.exports = {
     getSeasonsAndStyles,
     getBomDataBySeasonStyleAndFile,
     getSeasonsAndStylesMur,
-    getMurDataBySeasonAndStyle
+    getMurDataBySeasonAndStyle,
+    getFilesByGroup
 }
