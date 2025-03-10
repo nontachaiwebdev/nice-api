@@ -12,7 +12,7 @@ const ITEM_BY_SEASON_AND_STYLE = `
     ,sm.SmpType, sm.Style,
     sm.GmtType, sm.SysLMUser, sm.SysLMDate, sm.SysOwner, sm.\`Status\`, sm.ExtDesc1 Category,
     sb.PartName, sb.MatrCode, sb.MatrColor, sb.Unit, sb.MatrSize, sw.GmtColor, sw.Color Color_Code,
-    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category,
+    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category, sb.UCons as cons,
     IF(syg.Category='01', 'Fabric',
     IF(syg.Category='02', 'Accessories',
     IF(syg.Category='03', "Packing", 'Other'))) SportCategory
@@ -35,7 +35,7 @@ const ITEM_BY_SEASON_AND_STYLE = `
     ,sm.SmpType, sm.Style,
     sm.GmtType, sm.SysLMUser, sm.SysLMDate, sm.SysOwner, sm.\`Status\`, sm.ExtDesc1 Category,
     sb.PartName, sb.MatrCode, '' MatrColor, sb.Unit, sb.MatrSize, sy.color GmtColor, sb.matrcolor Color_Code,
-    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category,
+    sc.Description Color_Name, su.\`Code\` Supplier_Code, su.\`Name\` Supplier_Name,CardNo, syg.Category, sb.UCons as cons,
     IF(syg.Category='01', 'Fabric',
     IF(syg.Category='02', 'Accessories',
     IF(syg.Category='03', "Packing", 'Other'))) SportCategory

@@ -5,8 +5,7 @@ const toMainFormat = (d) => {
         combi: d.Combi,
         materia_code: d.MatrCode,
         color_code: d.Color,
-        vendor: d.BrandID,
-        // part: d.PartNo,
+        vendor: d.MaterialDesc.split('|')[1], //MaterialDesc,
         cons: d.Consumption,
         source: d
     }

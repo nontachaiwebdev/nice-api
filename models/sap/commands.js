@@ -15,7 +15,7 @@ dbo.SAP_DT_BomItem_View.MaterialNo = dbo.SAP_DT_BomHeader_View.MaterialNo LEFT O
 dbo.SAP_DT_MaterialPlantData_View ON dbo.SAP_DT_BomHeader_View.Plant = dbo.SAP_DT_MaterialPlantData_View.Plant AND 
 dbo.SAP_DT_BomHeader_View.MaterialNo = dbo.SAP_DT_MaterialPlantData_View.MaterialNo
 WHERE (dbo.SAP_DT_MaterialMasterHeader_View.Attibute5 = N':style') 
-AND (dbo.SAP_DT_MaterialSeasonData_View.Season = N':season' )
+AND (dbo.SAP_DT_MaterialSeasonData_View.Season = N':season')
 :category_condition; 
 `
 

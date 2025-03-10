@@ -245,7 +245,7 @@ async function bulkInsertExcelData(records, fileId, batchSize = 500) {
     }
 }
 
-async function bulkInsertBomData(records, fileId, batchSize = 500) {
+async function bulkInsertBomData(records, fileId, batchSize = 250, connection) {
     try {
         // Prepare the SQL statement
         const sql = `
@@ -359,7 +359,7 @@ async function bulkInsertBomData(records, fileId, batchSize = 500) {
             batches.push(values.slice(i, i + batchSize));
         }
 
-        const connection = await getConnection()
+        // const connection = await getConnection()
         // Insert batches
         let totalInserted = 0;
         for (const batch of batches) {
@@ -376,6 +376,8 @@ async function bulkInsertBomData(records, fileId, batchSize = 500) {
 
     } catch (error) {
         console.error('Bulk insert error:', error);
+        console.log(records.length, records[records.length - 1])
+        console.log(records.filter((record) => !record.BOM_ID || record.BOM_ID === ''))
         throw {
             success: false,
             error: error.message,

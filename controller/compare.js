@@ -13,8 +13,9 @@ const compare = async (req, res, next) => {
     const inetData = await inet.getItemsBySeasonAndStyle(season, style, req.body?.sample, req.body?.category)
 
     const sapData = await sap.getItemsBySeasonAndStyle(season, style, req.body?.category)
+    console.log(sapData)
     const bomToInet = compareEngine.compareBomWithInet(bomData, inetData)
-    const bomToSap = compareEngine.compareBomWithSap(bomData, sapData)
+    const bomToSap = compareEngine.compareBomWithSap(inetData, sapData)
     res.send({
         bomToInet,
         bomToSap
@@ -31,11 +32,13 @@ const murCompare = async (req, res, next) => {
     let withSuppliers = await mur.poppulateVendors(dt)
     if(req.body?.category)
         withSuppliers = mur.filterByCategory(withSuppliers, req.body?.category)
+    console.log(withSuppliers)
     const murData = mur.mapToMasterFormat(withSuppliers)
     const inetData = await inet.getItemsBySeasonAndStyle(season, style, req.body?.sample, req.body?.category)
     const sapData = await sap.getItemsBySeasonAndStyle(season, style)
+    // console.log(sapData)
     const bomToInet = compareEngine.compareBomWithInet(murData, inetData)
-    const bomToSap = compareEngine.compareBomWithSap(murData, sapData)
+    const bomToSap = compareEngine.compareBomWithSap(inetData, sapData)
     res.send({
         bomToInet,
         bomToSap

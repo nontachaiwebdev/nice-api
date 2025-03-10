@@ -20,7 +20,7 @@ const {
 
 const KEYS_GROUPING = [
     WORKING_NUMBER,
-    MATERIAL_CODE,
+    MATERIAL_CODE, 
     T2_SUPPLIER_CODE,
     ARTICLE,
     BOM_PART_GROUP_NUMBER,
@@ -141,6 +141,7 @@ const mapSuppliers = (suppliers) => (d) => {
         vendor: suppliers.find((s) => s.Code === d[T2_SUPPLIER_CODE])?.MapCode
     }
 }
+
 const poppulateVendors = (data) => {
     return new Promise(async (resolve, reject) => {
         const venderCD = new Set()
