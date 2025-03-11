@@ -19,7 +19,7 @@ const getCategoryCondition = (categoryCode) => {
         
 }
 
-const getItemsBySeasonAndStyle = (season, style, category) => {
+const getItemsBySeasonAndStyle = (season, style, category, sample) => {
     return new Promise(async (resolve, reject) => {
         try {
             console.log(commands.GET_ITEMS_BY_SEASON_AND_STYLE
@@ -31,6 +31,7 @@ const getItemsBySeasonAndStyle = (season, style, category) => {
             .replace(':season', season)
             .replace(':style', style)
             .replace(':category_condition', getCategoryCondition(category))
+            .replace(':alt_bom', sample === 7 ? '02' : '01')
             const result = await sql.query(CMD)
             resolve(result)
         } catch (err) {

@@ -12,7 +12,7 @@ const compare = async (req, res, next) => {
     const bomData = await bom.getBySeason(season, style, req.body.file, req.body?.category)
     const inetData = await inet.getItemsBySeasonAndStyle(season, style, req.body?.sample, req.body?.category)
 
-    const sapData = await sap.getItemsBySeasonAndStyle(season, style, req.body?.category)
+    const sapData = await sap.getItemsBySeasonAndStyle(season, style, req.body?.category, req.body?.sample)
     console.log(sapData)
     const bomToInet = compareEngine.compareBomWithInet(bomData, inetData)
     const bomToSap = compareEngine.compareBomWithSap(inetData, sapData)
@@ -35,7 +35,7 @@ const murCompare = async (req, res, next) => {
     console.log(withSuppliers)
     const murData = mur.mapToMasterFormat(withSuppliers)
     const inetData = await inet.getItemsBySeasonAndStyle(season, style, req.body?.sample, req.body?.category)
-    const sapData = await sap.getItemsBySeasonAndStyle(season, style)
+    const sapData = await sap.getItemsBySeasonAndStyle(season, style, req.body?.category, req.body?.sample)
     // console.log(sapData)
     const bomToInet = compareEngine.compareBomWithInet(murData, inetData)
     const bomToSap = compareEngine.compareBomWithSap(inetData, sapData)
