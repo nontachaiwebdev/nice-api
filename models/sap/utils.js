@@ -7,7 +7,8 @@ const toMainFormat = (d) => {
         color_code: d.Color,
         vendor: d.MaterialDesc.split('|')[1], //MaterialDesc,
         cons: d.Consumption,
-        source: d
+        source: d,
+        size: d.SIZE1
     }
 }
 const transformToMainFormat = (data) => data.map(toMainFormat)
