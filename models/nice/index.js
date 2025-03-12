@@ -297,7 +297,8 @@ async function bulkInsertBomData(records, fileId, batchSize = 250, connection) {
                 factory_box,
                 box_folder_id,
                 sheet_name,
-                qty
+                qty,
+                item_color_cd
             ) VALUES ?
         `;
 
@@ -350,7 +351,8 @@ async function bulkInsertBomData(records, fileId, batchSize = 250, connection) {
             record['FACTORY BOX'] || null,
             record['Box Folder ID'] || null,
             record.Sheet_Name || null,
-            record.QTY || null
+            record.QTY || null,
+            record.ITEM_COLOR_CD || null
         ]);
 
         // Process in batches
