@@ -108,7 +108,7 @@ const ITEM_BY_SEASON_AND_STYLE = `
 // smomstr.SmpType
 
 const GET_VENDORS = `SELECT Company, TableName, Code, MapCode
-FROM nicetraining.ngcodemap
+FROM ngcodemap
 WHERE Code IN (:vendors);`
 
 module.exports = {
