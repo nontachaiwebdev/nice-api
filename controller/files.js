@@ -8,6 +8,8 @@ const XLSX = require('xlsx')
 const stream = require('stream')
 const ExcelJS = require('exceljs');
 const niceDBConnection = require('../models/nice/connection')
+const XlsxStreamReader = require('xlsx-stream-reader');
+const path = require('path')
 
 const FTP_HOST = '192.168.19.62'
 const FTP_USERNAME = 'mavenfield01'
@@ -35,6 +37,406 @@ const getConnection = () => {
         }
         // client.close()
     })
+}
+
+const processExcelFileNew = async (buffer, groupId, fileId) => {
+    try {
+        console.log(`Starting Excel processing for file ID ${fileId}`);
+        
+        // Use a worker thread for processing large files
+        const connection = await niceDBConnection();
+        
+        // First, get just the workbook structure and sheet names
+        console.time('Initial sheet structure read');
+        const workbookInfo = XLSX.read(buffer, {
+            type: 'buffer',
+            bookSheets: true,
+            cellFormula: false,
+            cellHTML: false,
+            cellStyles: false,
+            cellDates: false,
+            sheetStubs: false,
+        });
+        console.timeEnd('Initial sheet structure read');
+        
+        if (!workbookInfo.SheetNames || workbookInfo.SheetNames.length === 0) {
+            console.error('No sheets found in Excel file');
+            return { success: false, error: 'No sheets found' };
+        }
+        
+        const sheetName = workbookInfo.SheetNames[0];
+        console.log(`Processing sheet: ${sheetName}`);
+
+        // Use a stream-based approach for XLSB files
+        return new Promise((resolve, reject) => {
+            try {
+                // Define batch parameters
+                const BATCH_SIZE = 1000; // Smaller batch size
+                let totalProcessed = 0;
+                let batch = [];
+                let headers = null;
+                
+                // Create a row handler that processes one row at a time
+                const rowHandler = async (row, seqno) => {
+                    try {
+                        // First row contains headers
+                        if (seqno === 0) {
+                            headers = row;
+                            return;
+                        }
+                        
+                        // Process data row
+                        const rowData = {};
+                        let hasData = false;
+                        
+                        // Map row values to header keys
+                        for (let i = 0; i < headers.length; i++) {
+                            if (headers[i] && row[i] !== undefined) {
+                                rowData[headers[i]] = row[i];
+                                hasData = true;
+                            }
+                        }
+                        
+                        // Add valid rows to the batch
+                        if (hasData && Object.keys(rowData).length > 0) {
+                            batch.push(rowData);
+                        }
+                        
+                        // Process batch when it reaches the size limit
+                        if (batch.length >= BATCH_SIZE) {
+                            console.log(`Processing batch of ${batch.length} rows (total so far: ${totalProcessed})`);
+                            
+                            console.log('batch', batch)
+                            if (groupId === 'group_two') {
+                                await nice.bulkInsertExcelData(batch, fileId, BATCH_SIZE, connection);
+                            } else {
+                                await nice.bulkInsertBomData(batch, fileId, BATCH_SIZE, connection);
+                            }
+                            
+                            totalProcessed += batch.length;
+                            batch = [];
+                            
+                            // Force garbage collection if available (Node.js with --expose-gc flag)
+                            if (global.gc) {
+                                global.gc();
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error processing row ${seqno}:`, error);
+                        throw error;
+                    }
+                };
+                
+                // Process final batch function
+                const processFinalBatch = async () => {
+                    if (batch.length > 0) {
+                        console.log(`Processing final batch of ${batch.length} rows`);
+                        
+                        if (groupId === 'group_two') {
+                            await nice.bulkInsertExcelData(batch, fileId, BATCH_SIZE, connection);
+                        } else {
+                            await nice.bulkInsertBomData(batch, fileId, BATCH_SIZE, connection);
+                        }
+                        
+                        totalProcessed += batch.length;
+                    }
+                    
+                    console.log(`Completed processing ${totalProcessed} total rows`);
+                    return { success: true, rowsProcessed: totalProcessed };
+                };
+                
+                // Stream process using sheet_to_json with stream option
+                console.time('Stream processing');
+                
+                // Create a readable stream from the buffer
+                const bufferStream = new stream.PassThrough();
+                bufferStream.end(buffer);
+                
+                // Use sheet_to_json with a row callback to process one row at a time
+                const parseOptions = {
+                    header: 1,           // Use array of values
+                    raw: false,          // Convert values
+                    dateNF: 'yyyy-mm-dd',// Date format
+                    defval: null,        // Default value
+                    blankrows: false     // Skip blank rows
+                };
+                
+                // Use XLSX-Populate or SheetJS Stream Reader for XLSB files
+                // This is a conceptual implementation - actual implementation depends on the library
+                
+                // Option 1: If using xlsx-stream-reader
+                // if (buffer.toString().includes('XLSB') || fileId.endsWith('.xlsb')) {
+                    const workBookReader = new XlsxStreamReader();
+                    
+                    workBookReader.on('worksheet', function(workSheetReader) {
+                        console.log('workSheetReader', workSheetReader)
+                        if (workSheetReader.id === 1) { // First sheet
+                            workSheetReader.on('row', function(row) {
+                                console.log('row', row)
+                                rowHandler(row.values, row.index - 1);
+                            });
+                            
+                            workSheetReader.on('end', async function() {
+                                const result = await processFinalBatch();
+                                resolve(result);
+                            });
+                            
+                            workSheetReader.process();
+                        } else {
+                            workSheetReader.skip();
+                        }
+                    });
+                    
+                    workBookReader.on('error', function(error) {
+                        reject(error);
+                    });
+                    
+                    console.log('Starting...')
+                    bufferStream.pipe(workBookReader);
+                // } 
+                // Option 2: For other Excel formats
+                // else {
+                //     // Create a sheet reader
+                //     const sheet = workbookInfo.Sheets[sheetName];
+                //     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                    
+                //     // Process rows asynchronously with setImmediate to avoid blocking
+                //     const processRowsAsync = async (startIdx) => {
+                //         const endIdx = Math.min(startIdx + 100, rows.length);
+                        
+                //         for (let i = startIdx; i < endIdx; i++) {
+                //             await rowHandler(rows[i], i);
+                //         }
+                        
+                //         if (endIdx < rows.length) {
+                //             setImmediate(() => processRowsAsync(endIdx));
+                //         } else {
+                //             const result = await processFinalBatch();
+                //             console.timeEnd('Stream processing');
+                //             resolve(result);
+                //         }
+                //     };
+                    
+                //     // Start processing rows
+                //     processRowsAsync(0);
+                // }
+            } catch (error) {
+                console.error('Error in stream processing:', error);
+                reject(error);
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error in Excel processing:', error);
+        throw error;
+    }
+};
+
+async function readExcelRowRangeWithExcelJS(filePath, startRow, endRow) {
+    const rows = [];
+    let rowIndex = 0;
+    let headers = null;
+    
+    const workbookReader = new ExcelJS.stream.xlsx.WorkbookReader(filePath, {
+      sharedStrings: 'cache',
+      hyperlinks: false,
+      worksheets: 'emit'
+    });
+    
+    for await (const worksheetReader of workbookReader) {
+      // Process only the first worksheet
+      for await (const row of worksheetReader) {
+        rowIndex++;
+        
+        // Get headers from the first row
+        if (rowIndex === 1) {
+          headers = row.values.slice(1); // ExcelJS uses 1-based indexing for values
+          
+          // If we need the header row and it's in our range
+          if (startRow === 1) {
+            rows.push([...headers]);
+          }
+          continue;
+        }
+        
+        // Skip rows before our range
+        if (rowIndex < startRow) {
+          continue;
+        }
+        
+        // Stop after we've read all rows in our range
+        if (rowIndex > endRow) {
+          break;
+        }
+        
+        // Process rows in our range
+        if (headers) {
+          // For data rows, convert to objects with header keys
+          const rowData = {};
+          row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+            if (headers[colNumber - 1]) {
+              rowData[headers[colNumber - 1]] = cell.value;
+            }
+          });
+          rows.push(rowData);
+        } else {
+          // If no headers, just store the raw values
+          const rowValues = [];
+          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            rowValues[colNumber - 1] = cell.value;
+          });
+          rows.push(rowValues);
+        }
+      }
+      
+      // We only process the first worksheet
+      break;
+    }
+    
+    return rows;
+}
+
+async function splitExcelBufferStreaming(buffer, outputDir, baseFileName, maxRowsPerFile = 50000, fileId, groupId) {
+    try {
+        const connection = await niceDBConnection();
+      // Ensure output directory exists
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+      
+      // Create a readable stream from the buffer
+      const bufferStream = new stream.PassThrough();
+      bufferStream.end(buffer);
+      
+      const outputFiles = [];
+      let headers = null;
+      let currentRows = [];
+      let fileIndex = 0;
+      let rowCount = 0;
+      
+      // Function to write current rows to a file
+      const writeChunkToFile = async () => {
+        if (currentRows.length === 0) return;
+        
+        try {
+          // Create a new workbook
+          const workbook = new ExcelJS.Workbook();
+          const worksheet = workbook.addWorksheet('Sheet1');
+          
+          // Add headers
+          if (headers) {
+            worksheet.addRow(headers);
+          }
+          
+          // Add data rows
+          for (const row of currentRows) {
+            worksheet.addRow(row);
+          }
+          
+          // Generate output filename
+          const outputFileName = `${baseFileName}_part${fileIndex + 1}.xlsx`;
+          const outputPath = path.join(outputDir, outputFileName);
+          
+          // Write to file
+          await workbook.xlsx.writeFile(outputPath);
+          console.log(`Created file ${outputPath} with ${currentRows.length} data rows`);
+          
+          outputFiles.push(outputPath);
+          
+          // Reset for next file
+          currentRows = [];
+          fileIndex++;
+        } catch (error) {
+          console.error('Error writing chunk to file:', error);
+          throw error;
+        }
+      };
+      
+      // Create a workbook reader from the buffer stream
+      const workbookReader = new ExcelJS.stream.xlsx.WorkbookReader(bufferStream, {
+        sharedStrings: 'cache',
+        hyperlinks: false,
+        worksheets: 'emit'
+      });
+      
+      console.log('Before Process')
+      // Process the workbook
+      for await (const worksheetReader of workbookReader) {
+        console.log('worksheetReader', worksheetReader)
+        let rowIndex = 0;
+        
+        // Process each row in the worksheet
+        for await (const row of worksheetReader) {
+          rowIndex++;
+          
+          // Get headers from the first row
+          if (rowIndex === 1) {
+            // ExcelJS uses 1-based indexing for values array
+            headers = [];
+            row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+              headers[colNumber - 1] = cell.value;
+            });
+            
+            // Filter out undefined values
+            headers = headers.filter(h => h !== undefined);
+            console.log(`Found ${headers.length} headers`);
+            continue;
+          }
+        //   console.log('headers', headers)
+          
+          // Process data row
+          const rowValues = {};
+          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            if (colNumber <= headers.length) {
+                rowValues[headers[colNumber - 1]] = cell.value;
+            //   rowValues[colNumber - 1] = cell.value;
+            }
+          });
+          
+        //   console.log('rowValues', rowValues)
+          // Add row to current batch
+          currentRows.push(rowValues);
+          rowCount++;
+
+          
+          // If we've reached the max rows per file, write to file
+          if (currentRows.length >= maxRowsPerFile) {
+            // await writeChunkToFile();
+            if (groupId === 'group_two') {
+                console.log('insert mur data')
+                await nice.bulkInsertExcelData(currentRows, fileId, 5000, connection);
+                currentRows = [];
+            } else {
+                console.log('insert bom data')
+                await nice.bulkInsertBomData(currentRows, fileId, 5000, connection);
+                currentRows = [];
+            }
+          }
+        }
+        
+        // We only process the first worksheet
+        break;
+      }
+      
+      // Write any remaining rows
+      if (currentRows.length > 0) {
+        // await writeChunkToFile();
+        if (groupId === 'group_two') {
+            console.log('insert mur data')
+            await nice.bulkInsertExcelData(currentRows, fileId, 5000, connection);
+        } else {
+            console.log('insert bom data')
+            await nice.bulkInsertBomData(currentRows, fileId, 5000, connection);
+        }
+      }
+      
+      console.log(`Successfully split Excel buffer into ${fileIndex} files with ${rowCount} total rows`);
+      return outputFiles;
+      
+    } catch (error) {
+      console.error('Error splitting Excel buffer:', error);
+      throw error;
+    }
 }
 
 /**
@@ -249,13 +651,12 @@ const upload = async (req, res, next) => {
     const stream = Readable.from(req.file.buffer)
     const cli = await getConnection()
     let fileName = `${moment().format('YY-MM-DDHHmmss')}.xlsb`
-    console.log('Upload file to pdf.')
     await cli.uploadFrom(stream, `${req.params.group_id}/${fileName}`)
     await cli.close()
-    console.log('Done Upload file to pdf.')
     const fileData = await nice.insertFile(req.params.group_id, fileName, req.params.user_id)
+    const files = await splitExcelBufferStreaming(req.file.buffer, './test', 'bom', 50000, fileData.insertId, req.params.group_id)
+    // await processExcelFileNew(req.file.buffer, req.params.group_id, fileData.insertId)
 
-    await processExcelFile(req.file.buffer, req.params.group_id, fileData.insertId)
     // console.log('Before insert data')
     // try {
     //     const workbook = XLSX.read(req.file.buffer)

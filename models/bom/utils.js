@@ -12,11 +12,18 @@ const filterBySeasonAndStyle = (data, season, style) => data.filter((d) => isSam
 
 const isGcwColor = (d) => !!d[fields.GCW_COLOR] 
 const groupByStyleAndMaterial = (result, d) => {
+    // console.log(d)
+    if(`${d[fields.STYLE_CODE]}#${d[fields.MATERIAL_NUMBER]}` === '060#309764') {
+        console.log('Found!')
+    }
     const code = `${d[fields.STYLE_CODE]}#${d[fields.MATERIAL_NUMBER]}`
     const grouped = {
         ...result,
         [code]: result[code] ? [...result[code], d] : [d]
     }
+    // if(code === '060#309764') {
+    //     console.log(d)
+    // }
     // return grouped;
     return Object.keys(grouped).reduce((result, key) => {
         const items = grouped[key]
@@ -36,7 +43,7 @@ const groupByStyleAndMaterial = (result, d) => {
                 return {
                     ...result,
                     [key]: grouped[key].reduce((result, item) => {
-                        const duplicated = result.find((r) => r['ITEM_COLOR_ORD'] === item['ITEM_COLOR_ORD'])
+                        const duplicated = result.find((r) => r['COMPONENT_ORD'] === item['COMPONENT_ORD'])
                         if(duplicated)
                             return result
 
@@ -83,7 +90,9 @@ const getValidRowFromGrouped = (data) => {
     return Object.keys(data).reduce(reduceFunc, [])
 }
 const groupDataRow = (data) => {
+    console.log(data.filter((d) => `${d[fields.STYLE_CODE]}#${d[fields.MATERIAL_NUMBER]}` === '060#309764').length)
     const groupedByStyleAndMaterial = data.reduce(groupByStyleAndMaterial, {})
+    // console.log(groupedByStyleAndMaterial['060#309764'])
     const validData = getValidRowFromGrouped(groupedByStyleAndMaterial)
     return validData
 }

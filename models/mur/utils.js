@@ -112,12 +112,18 @@ const groupItemByKeys = (data) => {
             [keys]: result[keys] ? [...result[keys], item] : [item]
         }
     }, {})
+    console.log(Object.keys(groupByKeys))
+    console.log(groupByKeys['F2406LHPT300W#70034433#100001#IM5463#50#AZB001'])
     return Object.keys(groupByKeys).reduce((result, key) => {
         if(groupByKeys[key].length === 1) {
             return [...result, getSingleColorCode(groupByKeys[key][0])]
         }
 
         const color_order_len = groupByKeys[key].reduce((result, item) => {
+            if(key === 'F2406LHPT300W#70034433#100001#IM5463#50#AZB001') {
+                console.log(item[ORDER_COLOR])
+            }
+
             if(item[ORDER_COLOR]) {
                 return result + 1
             }
@@ -125,11 +131,15 @@ const groupItemByKeys = (data) => {
             return result
         }, 0)
 
+        if(key === 'F2406LHPT300W#70034433#100001#IM5463#50#AZB001') {
+            console.log(color_order_len)
+        }
+
         if(color_order_len === 0) {
             return [...result, getSingleColorCode(groupByKeys[key][0])]
         } 
 
-        const readyToOrder = groupByKeys[key].filter((item) => item[ORDER_COLOR] !== null && item[ORDER_COLOR] !== undefined) 
+        const readyToOrder = groupByKeys[key].filter((item) => item[ORDER_COLOR] !== null && item[ORDER_COLOR] !== undefined && item[ORDER_COLOR] !== '') 
         readyToOrder.sort((a, b) => a[ORDER_COLOR] - b[ORDER_COLOR])
         return [...result, mapColorCode(readyToOrder)]
     }, [])

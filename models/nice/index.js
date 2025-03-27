@@ -130,7 +130,8 @@ async function bulkInsertExcelData(records, fileId, batchSize = 500) {
                 t2_supplier_factory_type,
                 article_factory_lead_time,
                 material_supplier_uom,
-                yield
+                yield,
+                bom_color_layer_number
             ) VALUES ?
         `;
 
@@ -211,7 +212,8 @@ async function bulkInsertExcelData(records, fileId, batchSize = 500) {
             record['T2 Supplier Factory Type'] || null,
             record['Article Factory Lead Time'] || null,
             record['Material Supplier UoM'] || null,
-            record['Yield'] || null
+            record['Yield'] || null,
+            !['', ' '].includes(record['BOM Color Layer Number']) ? record['BOM Color Layer Number'] : null
         ]);
 
         // Process in batches
@@ -298,7 +300,10 @@ async function bulkInsertBomData(records, fileId, batchSize = 250, connection) {
                 box_folder_id,
                 sheet_name,
                 qty,
-                item_color_cd
+                item_color_cd,
+                \`gcw#\`,
+                gcw_ord,
+                gcw_art_description
             ) VALUES ?
         `;
 
@@ -352,7 +357,10 @@ async function bulkInsertBomData(records, fileId, batchSize = 250, connection) {
             record['Box Folder ID'] || null,
             record.Sheet_Name || null,
             record.QTY || null,
-            record.ITEM_COLOR_CD || null
+            record.ITEM_COLOR_CD || null,
+            record['GCW#'] || null,
+            record.GCW_ORD || null,
+            record.GCW_ART_DESCRIPTION || null
         ]);
 
         // Process in batches
@@ -543,6 +551,9 @@ const getBomDataBySeasonStyleAndFile = async (season, style, fileName) => {
                 'PARENT BOX': row.parent_box || '',
                 'FACTORY BOX': row.factory_box || '',
                 'Box Folder ID': row.box_folder_id || '',
+                'GCW#': row.gcw_ord || '',
+                'GCW_ORD': row.gcw_ord || '',
+                'GCW_ART_DESCRIPTION': row.gcw_art_description || '',
                 Sheet_Name: row.sheet_name || 'MASTERDATA'
             };
         });
@@ -609,6 +620,7 @@ const getSeasonsAndStylesMur = async (fileName = null) => {
  * @returns {Promise<Array>} - Array of MUR data records in the specified format
  */
 const getMurDataBySeasonAndStyle = async (season, style, fileName = null) => {
+    console.log(season, style, fileName)
     try {
         const connection = await getConnection();
         
@@ -642,8 +654,93 @@ const getMurDataBySeasonAndStyle = async (season, style, fileName = null) => {
         
         // Add ORDER BY
         query += ` ORDER BY mur_data.id`;
+
+        console.log(query)
         
         const [rows] = await connection.query(query, params);
+
+    //     WORKING_NUMBER,
+    // MATERIAL_CODE, 
+    // T2_SUPPLIER_CODE,
+    // ARTICLE,
+    // BOM_PART_GROUP_NUMBER,
+    // T1_FACTORY_CODE
+
+    // record['Working Season'] || null,
+    //         record['Product Division'] || null,
+    //         record['Brand'] || null,
+    //         record['Article Creation Center'] || null,
+    //         record['Article Key Category Cluster'] || null,
+    //         record['Article Key Category'] || null,
+    //         record['Article Business Segment'] || null,
+    //         record['Sports Category'] || null,
+    //         record['Sales Line'] || null,
+    //         record['Product Group'] || null,
+    //         record['Model'] || null,
+    //         record['Working Number'] || null,
+    //         record['Article CC Developer'] || null,
+    //         record['Sustainability and Ethics Compliance (All)'] || null,
+    //         record['Product Specialty (All)'] || null,
+    //         record['Direct Development'] || null,
+    //         record['Brand Partner (All)'] || null,
+    //         record['Model Status'] || null,
+    //         record['Model Season Lifecycle State'] || null,
+    //         record['Material Type'] || null,
+    //         record['Material CODE'] || null,
+    //         record['Material NAME'] || null,
+    //         record['Material Description'] || null,
+    //         record['Material Overall Composition'] || null,
+    //         record['Material Construction'] || null,
+    //         record['Material Weight'] || null,
+    //         record['Material Weight UoM'] || null,
+    //         record['Material First Season'] || null,
+    //         record['Material Hangtags'] || null,
+    //         record['Material Remarks'] || null,
+    //         record['Material Supplier Remark'] || null,
+    //         record['Material Developer'] || null,
+    //         record['Material Requestor'] || null,
+    //         record['Material General Look And Handfeel Approval'] || null,
+    //         record['T2 Supplier Group'] || null,
+    //         record['T2 Supplier CODE'] || null,
+    //         record['T2 Supplier NAME'] || null,
+    //         record['T2 Supplier Country'] || null,
+    //         record['T2 Supplier LO'] || null,
+    //         record['Supplier Material CODE'] || null,
+    //         record['Material Supplier Lead Time'] || null,
+    //         record['Material Supplier Current LCS'] || null,
+    //         record['Material Earliest Buy Ready Date'] || null,
+    //         record['Article'] || null,
+    //         record['Colorway Name'] || null,
+    //         record['Article Status'] || null,
+    //         record['Article Development Type'] || null,
+    //         record['Article Technology Concept (All)'] || null,
+    //         record['Fabric Activation'] || null,
+    //         record['Article Season Lifecycle State'] || null,
+    //         record['Article Timeline'] || null,
+    //         record['Earliest Buy Ready Article'] || null,
+    //         record['Article First Colorway'] || null,
+    //         record['BOM Main Material Flag'] || null,
+    //         record['BOM Part ID'] || null,
+    //         record['BOM Part Group Number'] || null,
+    //         record['BOM Multi Color Flag'] || null,
+    //         record['PFP'] || null,
+    //         record['BOM Part Name'] || null,
+    //         record['Material Complex Flag'] || null,
+    //         record['BOM Part Color CODE'] || null,
+    //         record['BOM Part Color NAME'] || null,
+    //         record['First Buy Ready Color Date'] || null,
+    //         record['Part Remarks'] || null,
+    //         record['T1 Factory CODE'] || null,
+    //         record['T1 Factory NAME'] || null,
+    //         record['T1 Factory Country'] || null,
+    //         record['T1 Factory LO'] || null,
+    //         record['T1 Factory Priority'] || null,
+    //         record['Development Factory'] || null,
+    //         record['Model LO Developer'] || null,
+    //         record['T2 Supplier Factory Type'] || null,
+    //         record['Article Factory Lead Time'] || null,
+    //         record['Material Supplier UoM'] || null,
+    //         record['Yield'] || null
         
         // Transform the data to match the required format
         const transformedRows = rows.map(row => {
@@ -722,7 +819,8 @@ const getMurDataBySeasonAndStyle = async (season, style, fileName = null) => {
                 'T2 Supplier Factory Type': row.t2_supplier_factory_type || '',
                 'Article Factory Lead Time': row.article_factory_lead_time || '',
                 'Material Supplier UoM': row.material_supplier_uom || '',
-                'Yield': row.yield || null
+                'Yield': row.yield || null,
+                'BOM Color Layer Number': row.bom_color_layer_number || ''
             };
         });
         
