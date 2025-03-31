@@ -7,6 +7,7 @@ const toMainFormat = (d) => {
         color_code: d.Color_Code,
         vendor: d.Supplier_Code,
         cons: d.cons,
+        part: d.PartName,
         // msc_code: d[fields.MSC_CODE],
         // part: d.PartNo,
         source: d

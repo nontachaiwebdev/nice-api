@@ -1,5 +1,7 @@
 const compareKeys = ['season', 'style', 'combi', 'materia_code', 'color_code', 'vendor']
+const compareKeysInetSap = ['season', 'style', 'combi', 'materia_code', 'color_code', 'vendor', 'part']
 const getKey = (dt) => compareKeys.map((k) => dt[k]).join(':')
+const getKeyInetSap = (dt) => compareKeysInetSap.map((k) => dt[k]).join(':')
 const compareBomWithInet = (bomData, inetData) => {
     const bomResult = bomData.reduce((result, dt) => {
         const compareKey = getKey(dt)
@@ -58,9 +60,9 @@ const compareBomWithInet = (bomData, inetData) => {
 
 const compareBomWithSap = (bomData, sapData) => {
     const bomResult = bomData.reduce((result, dt) => {
-        const compareKey = getKey(dt)
+        const compareKey = getKeyInetSap(dt)
         const matched = sapData.find((d) => {
-            return getKey(d) === compareKey
+            return getKeyInetSap(d) === compareKey
         })
         const resultData = {...dt, key: compareKey}
         if(matched) 

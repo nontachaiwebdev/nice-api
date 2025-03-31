@@ -8,7 +8,8 @@ const toMainFormat = (d) => {
         vendor: d.MaterialDesc.split('|')[1], //MaterialDesc,
         cons: d.Consumption,
         source: d,
-        size: d.SIZE1
+        size: d.SIZE1,
+        part: d.PartNo
     }
 }
 const transformToMainFormat = (data) => data.map(toMainFormat)
