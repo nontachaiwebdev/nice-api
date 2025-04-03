@@ -648,9 +648,10 @@ const processExcelFile = async (buffer, groupId, fileId) => {
 
 const upload = async (req, res, next) => {
     const formData = req.body;
+    const extension = formData['name'].split('.').pop()
     const stream = Readable.from(req.file.buffer)
     const cli = await getConnection()
-    let fileName = `${moment().format('YY-MM-DDHHmmss')}.xlsb`
+    let fileName = `${moment().format('YY-MM-DDHHmmss')}.${extension}`
     await cli.uploadFrom(stream, `${req.params.group_id}/${fileName}`)
     await cli.close()
     const fileData = await nice.insertFile(req.params.group_id, fileName, req.params.user_id)
