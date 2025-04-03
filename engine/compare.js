@@ -78,7 +78,7 @@ const compareBomWithSap = (bomData, sapData) => {
     }, { add: [], update: [], found: [] })
     const updateKeys = bomResult.update.map((dt) => dt.key)
     const sapResult = sapData.reduce((result, dt) => {
-        const compareKey = getKey(dt)
+        const compareKey = getKeyInetSap(dt)
         const matched = updateKeys.includes(compareKey)
         const resultData = {...dt, key: compareKey}
         if(matched) 
