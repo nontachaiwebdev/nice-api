@@ -1,8 +1,8 @@
 const mysql = require('mysql2/promise')
 
-const HOST = '127.0.0.1'
-const USER = 'root'
-const PASSWORD = 'password'
+const HOST = '192.168.19.91'
+const USER = 'nontachai'
+const PASSWORD = '12qwaszx'
 const DATABASE = 'nice'
 const getConnection = () => {
     return new Promise(async (resolve, reject) => {
@@ -10,8 +10,24 @@ const getConnection = () => {
             host: HOST,
             user: USER,
             password: PASSWORD,
-            database: DATABASE
+            database: DATABASE,
+            waitForConnections: true,
+            connectionLimit: 5, // Reduce connection limit
+            queueLimit: 0,
+            enableKeepAlive: true,
+            keepAliveInitialDelay: 10000
         });
+        // const pool = mysql.createPool({
+        //     host: HOST,
+        //     user: USER,
+        //     password: PASSWORD,
+        //     database: DATABASE,
+        //     waitForConnections: true,
+        //     connectionLimit: 10,
+        //     queueLimit: 0,
+        //     enableKeepAlive: true,
+        //     keepAliveInitialDelay: 10000
+        // });
         resolve(connection)
     })
 }
