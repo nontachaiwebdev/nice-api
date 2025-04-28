@@ -11,9 +11,9 @@ const niceDBConnection = require('../models/nice/connection')
 const XlsxStreamReader = require('xlsx-stream-reader');
 const path = require('path')
 
-const FTP_HOST = '192.168.19.62'
-const FTP_USERNAME = 'mavenfield01'
-const FTP_PASSWORD = 'P@$$1234'
+const FTP_HOST = process.env.FTP_HOST
+const FTP_USERNAME = process.env.FTP_USERNAME
+const FTP_PASSWORD = process.env.FTP_PASSWORD
 
 const getConnection = () => {
     return new Promise(async (resolve, reject) => {

@@ -1,9 +1,9 @@
 const mysql = require('mysql2/promise')
 
-const HOST = '192.168.19.20'
-const USER = 'TouchUp'
-const PASSWORD = 'fN3mzP67'
-const DATABASE = 'niceapparel'
+const HOST = process.env.INET_HOST
+const USER = process.env.INET_USER
+const PASSWORD = process.env.INET_PASSWORD
+const DATABASE = process.env.INET_DATABASE
 const getConnection = () => {
     return new Promise(async (resolve, reject) => {
         const connection = await mysql.createConnection({

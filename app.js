@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const port = 4000
+require('dotenv').config();
 const compareEngine = require('./controller/compare')
 const source = require('./controller/source')
 const cors = require('cors')

@@ -1,10 +1,10 @@
-const HOST = '192.168.19.180'
-const USER = 'TouchUp'
-const PASSWORD = 'fN3mzP67'
+const HOST = process.env.SAP_HOST
+const USER = process.env.SAP_USER
+const PASSWORD = process.env.SAP_PASSWORD
 const config = {
     user: USER,
     password: PASSWORD,
-    database: 'Sapdatatank', // process.env.DB_NAME,
+    database: process.env.SAP_DATABASE,
     server: HOST,
     pool: {
       max: 10,
