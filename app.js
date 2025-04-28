@@ -15,7 +15,7 @@ const upload = multer()
 
 const corsOptions = {
     // origin: 'http://localhost:3000',
-    origin: 'http://192.168.19.91:3000',
+    origin: 'http://192.168.19.90:3000',
     credentials: true,
 };
 app.use(cors(corsOptions))
