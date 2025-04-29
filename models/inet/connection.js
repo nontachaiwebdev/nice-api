@@ -8,7 +8,7 @@ const getConnection = () => {
     return new Promise(async (resolve, reject) => {
         console.log(HOST, USER, PASSWORD, DATABASE)
         const connection = await mysql.createConnection({
-            host: '192.168.19.181', // process.env.INET_HOST,
+            host: process.env.INET_HOST,
             user: process.env.INET_USER,
             password: process.env.INET_PASSWORD,
             database: process.env.INET_DATABASE
