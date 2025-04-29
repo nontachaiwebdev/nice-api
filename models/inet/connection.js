@@ -8,10 +8,10 @@ const getConnection = () => {
     return new Promise(async (resolve, reject) => {
         console.log(HOST, USER, PASSWORD, DATABASE)
         const connection = await mysql.createConnection({
-            host: HOST,
-            user: USER,
-            password: PASSWORD,
-            database: DATABASE
+            host: process.env.INET_HOST,
+            user: process.env.INET_USER,
+            password: process.env.INET_PASSWORD,
+            database: process.env.INET_DATABASE
         });
         resolve(connection)
     })
