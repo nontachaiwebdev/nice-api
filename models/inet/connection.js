@@ -6,6 +6,7 @@ const PASSWORD = process.env.INET_PASSWORD
 const DATABASE = process.env.INET_DATABASE
 const getConnection = () => {
     return new Promise(async (resolve, reject) => {
+        console.log(HOST, USER, PASSWORD, DATABASE)
         const connection = await mysql.createConnection({
             host: HOST,
             user: USER,
