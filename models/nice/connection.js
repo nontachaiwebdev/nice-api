@@ -5,6 +5,7 @@ const USER = process.env.NICE_USER
 const PASSWORD = process.env.NICE_PASSWORD
 const DATABASE = process.env.NICE_DATABASE
 const getConnection = () => {
+    console.log(HOST, USER, PASSWORD, DATABASE)
     return new Promise(async (resolve, reject) => {
         const connection = await mysql.createConnection({
             host: HOST,
