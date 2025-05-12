@@ -17,6 +17,7 @@ dbo.SAP_DT_BomHeader_View.MaterialNo = dbo.SAP_DT_MaterialPlantData_View.Materia
 WHERE (dbo.SAP_DT_MaterialMasterHeader_View.Attibute5 = N':style') 
 AND (dbo.SAP_DT_MaterialSeasonData_View.Season = N':season')
 AND dbo.SAP_DT_BomItem_View.AltBom = :alt_bom
+AND dbo.SAP_DT_BomItem_View.Deleted <> 'X'
 :category_condition; 
 `
 
